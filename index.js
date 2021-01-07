@@ -1,6 +1,6 @@
 import axios from 'axios';
-import odds from './sport-odds.json';
 import * as constants from './constants.js';
+// import odds from './sport-odds.json';
 
 export const main = async () => {
   let sport_key = 'upcoming';
@@ -147,42 +147,17 @@ function printHedgeEvents(events) {
     let firstTeamDogSites = [];
     let secondTeamDogSites = [];
     for (let i = 0; i < sportEvent.sites.length - 1; i++) {
-      let dogTeam;
-      let dogOdds;
       if (sportEvent.sites[i].odds.h2h[0] > sportEvent.sites[i].odds.h2h[1]) {
-        dogTeam = sportEvent.teams[0];
-        dogOdds = sportEvent.sites[i].odds.h2h[0];
         firstTeamDogSites.push(sportEvent.sites[i]);
       } else if (
         sportEvent.sites[i].odds.h2h[0] < sportEvent.sites[i].odds.h2h[1]
       ) {
-        dogTeam = sportEvent.teams[1];
-        dogOdds = sportEvent.sites[i].odds.h2h[1];
         secondTeamDogSites.push(sportEvent.sites[i]);
-      }
-      for (let j = i + 1; j < sportEvent.sites.length; j++) {
-        let otherDogTeam;
-        let otherDogOdds;
-        if (sportEvent.sites[j].odds.h2h[0] > sportEvent.sites[j].odds.h2h[1]) {
-          otherDogTeam = sportEvent.teams[0];
-          otherDogOdds = sportEvent.sites[j].odds.h2h[0];
-        } else {
-          otherDogTeam = sportEvent.teams[1];
-          otherDogOdds = sportEvent.sites[j].odds.h2h[1];
-        }
-        if (dogTeam != otherDogTeam) {
-          // const msg =
-          //   `Money Maker: ${sportEvent.sport_nice}\n` +
-          //   `${sportEvent.sites[i].site_nice} : ${dogTeam} - ${dogOdds}\n` +
-          //   `${sportEvent.sites[j].site_nice} : ${otherDogTeam} - ${otherDogOdds}`;
-          // sendTextMessage(msg);
-          //console.log(msg);
-        }
       }
     }
     if (firstTeamDogSites.length > 0 && secondTeamDogSites.length > 0) {
-      console.log(firstTeamDogSites);
-      console.log(secondTeamDogSites);
+      console.dir(firstTeamDogSites, { depth: null });
+      console.dir(secondTeamDogSites, { depth: null });
       // Find largest odds from each array
       const maxFirstTeamSite = firstTeamDogSites.reduce((prev, current) =>
         prev.odds.h2h[0] > current.odds.h2h[0] ? prev : current
@@ -190,6 +165,13 @@ function printHedgeEvents(events) {
       const maxSecondTeamSite = secondTeamDogSites.reduce((prev, current) =>
         prev.odds.h2h[1] > current.odds.h2h[1] ? prev : current
       );
+      // Error in lines
+      if (
+        maxFirstTeamSite.odds.h2h[0] < 2 ||
+        maxSecondTeamSite.odds.h2h[1] < 2
+      ) {
+        continue;
+      }
       const msg =
         `Money Maker: ${sportEvent.sport_nice}\n` +
         `${maxFirstTeamSite.site_nice} : ${sportEvent.teams[0]} - ${maxFirstTeamSite.odds.h2h[0]}\n` +
