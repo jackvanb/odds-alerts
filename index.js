@@ -1,8 +1,8 @@
-import axios from 'axios';
-import * as constants from './constants.js';
+const axios = require('axios');
+const constants = require('./constants.js');
 // import odds from './sport-odds.json';
 
-export const main = async () => {
+exports.main = async () => {
   let sport_key = 'upcoming';
   let sport_region = 'us';
   let sport_market = 'h2h';
@@ -15,7 +15,7 @@ export const main = async () => {
   if (upcomingEvents != null) printHedgeEvents(upcomingEvents);
 };
 
-main();
+exports.main();
 
 async function findInSeasonSports() {
   try {
