@@ -11,7 +11,6 @@ exports.main = async () => {
     sport_region,
     sport_market
   );
-  console.log(upcomingEvents);
   if (upcomingEvents != null) printHedgeEvents(upcomingEvents);
 };
 
@@ -56,10 +55,6 @@ async function findInSeasonSports() {
 
 // To get odds for a sepcific sport, use the sport key from the last request
 //   or set sport to "upcoming" to see live and upcoming across all sports
-let sport_key = 'upcoming';
-let sport_region = 'us';
-let sport_market = 'h2h';
-
 async function findUpcomingEvents(key, region, market) {
   try {
     const response = await axios.get(constants.ODDS_API_BASE_URL, {
@@ -81,6 +76,7 @@ async function findUpcomingEvents(key, region, market) {
     const upcomingEvents = response.data.data.filter(
       (event) => event.commence_time * 1000 > Date.now()
     );
+    console.log(upcomingEvents.length + ' events found.');
     return upcomingEvents;
   } catch (error) {
     console.log('Error status', error.response.status);
@@ -139,7 +135,7 @@ function sendTextMessage(msg) {
       from: constants.smsFrom,
       to: constants.smsTo,
     })
-    .then((message) => console.log(message.sid));
+    .then((message) => console.log('Message sent: ' + message.sid));
 }
 
 function printHedgeEvents(events) {
@@ -156,8 +152,8 @@ function printHedgeEvents(events) {
       }
     }
     if (firstTeamDogSites.length > 0 && secondTeamDogSites.length > 0) {
-      console.dir(firstTeamDogSites, { depth: null });
-      console.dir(secondTeamDogSites, { depth: null });
+      //console.dir(firstTeamDogSites, { depth: null });
+      // console.dir(secondTeamDogSites, { depth: null });
       // Find largest odds from each array
       const maxFirstTeamSite = firstTeamDogSites.reduce((prev, current) =>
         prev.odds.h2h[0] > current.odds.h2h[0] ? prev : current
@@ -176,7 +172,7 @@ function printHedgeEvents(events) {
         `Money Maker: ${sportEvent.sport_nice}\n` +
         `${maxFirstTeamSite.site_nice} : ${sportEvent.teams[0]} - ${maxFirstTeamSite.odds.h2h[0]}\n` +
         `${maxSecondTeamSite.site_nice} : ${sportEvent.teams[1]} - ${maxSecondTeamSite.odds.h2h[1]}`;
-      // sendTextMessage(msg);
+      sendTextMessage(msg);
       console.log(msg);
     }
   }
