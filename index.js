@@ -33,26 +33,6 @@ async function findInSeasonSports() {
   }
 }
 
-// Get a list of in season sports
-// axios
-//   .get('https://api.the-odds-api.com/v3/sports', {
-//     params: {
-//       api_key: constants.ODDS_API_KEY,
-//     },
-//   })
-//   .then((response) => {
-//     console.log(
-//       `Successfully got ${response.data.data.length} sports.`,
-//       `Here's the first sport:`
-//     );
-
-//     console.log(response.data.data);
-//   })
-//   .catch((error) => {
-//     console.log('Error status', error.response.status);
-//     console.log(error.response.data);
-//   });
-
 // To get odds for a sepcific sport, use the sport key from the last request
 //   or set sport to "upcoming" to see live and upcoming across all sports
 async function findUpcomingEvents(key, region, market) {
@@ -85,49 +65,6 @@ async function findUpcomingEvents(key, region, market) {
   }
 }
 
-// axios
-//   .get(constants.ODDS_API_BASE_URL, {
-//     params: {
-//       api_key: constants.ODDS_API_KEY,
-//       sport: key,
-//       region: region, // uk | us | eu | au
-//       mkt: market, // h2h | spreads | totals
-//       date_format: 'unix',
-//     },
-//   })
-//   .then((response) => {
-//     // Events are ordered by start time (live events are first)
-//     console.log(
-//       `Successfully got ${response.data.data.length} events`,
-//       `Here's the first event:`
-//     );
-//     console.log(JSON.stringify(response.data.data[0]));
-
-//     // Check your usage
-//     console.log();
-//     console.log('Remaining requests', response.headers['x-requests-remaining']);
-//     console.log('Used requests', response.headers['x-requests-used']);
-
-//     // Print hedge odds
-//     console.log(response.data);
-//     // Filter out live events
-//     const result = response.data.data.filter(
-//       (event) => event.commence_time * 1000 > Date.now()
-//     );
-//     printHedgeEvents(result);
-//   })
-//   .catch((error) => {
-//     console.log('Error status', error.response.status);
-//     console.log(error.response.data);
-//   });
-
-// console.log(odds.data);
-// const result = odds.data.filter(
-//   (event) => Date(event.commence_time) > Date.now()
-// );
-// console.log(result);
-// printHedgeEvents(odds.data);
-
 function sendTextMessage(msg) {
   constants.smsClient.messages
     .create({
@@ -152,7 +89,7 @@ function printHedgeEvents(events) {
       }
     }
     if (firstTeamDogSites.length > 0 && secondTeamDogSites.length > 0) {
-      //console.dir(firstTeamDogSites, { depth: null });
+      // console.dir(firstTeamDogSites, { depth: null });
       // console.dir(secondTeamDogSites, { depth: null });
       // Find largest odds from each array
       const maxFirstTeamSite = firstTeamDogSites.reduce((prev, current) =>
