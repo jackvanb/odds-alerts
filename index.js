@@ -1,6 +1,6 @@
 const axios = require('axios');
 const constants = require('./constants.js');
-// import odds from './sport-odds.json';
+const odds_json = require('./sport-odds.json');
 
 exports.main = async () => {
   let sport_key = 'upcoming';
@@ -11,10 +11,14 @@ exports.main = async () => {
     sport_region,
     sport_market
   );
-  if (upcomingEvents != null) printHedgeEvents(upcomingEvents);
+  if (upcomingEvents != null) {
+    printHedgeEvents(upcomingEvents);
+    // printValueOdds(upcomingEvents);
+  }
 };
 
-exports.main();
+// exports.main();
+// printValueOdds(odds_json.data);
 
 async function findInSeasonSports() {
   try {
@@ -113,4 +117,53 @@ function printHedgeEvents(events) {
       console.log(msg);
     }
   }
+}
+
+function printValueOdds(events) {
+  // Adjustment for profit margin
+  const alpha = 0.05;
+  for (const sportEvent of events) {
+    [0, 1].forEach((index) => {
+      let valueBet = findValueBet(sportEvent, index);
+      if (valueBet != null) {
+        // Value bet found
+        const site = valueBet[0];
+        const avgProb = valueBet[1];
+        const msg =
+          `Value Odd Found: ${sportEvent.sport_nice}\n` +
+          `${site.site_nice} : ${sportEvent.teams[index]} - ${site.odds.h2h[index]}\n` +
+          `Average Odds : ${1 / avgProb}\n` +
+          `Estimated edge: ${site.odds.h2h[index] - avgProb / avgProb}%`;
+        // sendTextMessage(msg);
+        console.log(msg);
+      }
+    });
+  }
+}
+
+function findValueBet(sportEvent, index) {
+  // Average odds of first team across bookies
+  const averageProb = oddsAverage(sportEvent, index);
+  // Find max odds
+  const maxOddsSite = sportEvent.sites.reduce((prev, current) =>
+    prev.odds.h2h[index] > current.odds.h2h[index] ? prev : current
+  );
+
+  if (
+    1 / maxOddsSite.odds.h2h[index] >
+    1 / (averageProb - constants.ODDS_ADJUSTMENT)
+  ) {
+    // Value bet
+    return [maxOddsSite, averageProb];
+  }
+
+  return null;
+}
+
+function oddsAverage(event, index) {
+  let sum = 0;
+  for (const site of event.sites) {
+    sum += 1 / site.odds.h2h[index];
+  }
+  return sum / event.sites.length;
 }
