@@ -18,7 +18,7 @@ exports.main = async () => {
 };
 
 // exports.main();
-// printValueOdds(odds_json.data);
+//printValueOdds(odds_json.data);
 
 async function findInSeasonSports() {
   try {
@@ -111,6 +111,7 @@ function printHedgeEvents(events) {
       }
       const msg =
         `Money Maker: ${sportEvent.sport_nice}\n` +
+        `${dateString(sportEvent.commence_time)}\n` +
         `${maxFirstTeamSite.site_nice} : ${sportEvent.teams[0]} - ${maxFirstTeamSite.odds.h2h[0]}\n` +
         `${maxSecondTeamSite.site_nice} : ${sportEvent.teams[1]} - ${maxSecondTeamSite.odds.h2h[1]}`;
       sendTextMessage(msg);
@@ -120,8 +121,6 @@ function printHedgeEvents(events) {
 }
 
 function printValueOdds(events) {
-  // Adjustment for profit margin
-  const alpha = 0.05;
   for (const sportEvent of events) {
     [0, 1].forEach((index) => {
       let valueBet = findValueBet(sportEvent, index);
@@ -131,6 +130,7 @@ function printValueOdds(events) {
         const avgProb = valueBet[1];
         const msg =
           `Value Odd Found: ${sportEvent.sport_nice}\n` +
+          `${dateString(sportEvent.commence_time)}\n` +
           `${site.site_nice} : ${sportEvent.teams[index]} - ${site.odds.h2h[index]}\n` +
           `Average Odds : ${1 / avgProb}\n` +
           `Estimated edge: ${site.odds.h2h[index] - avgProb / avgProb}%`;
@@ -166,4 +166,13 @@ function oddsAverage(event, index) {
     sum += 1 / site.odds.h2h[index];
   }
   return sum / event.sites.length;
+}
+
+function dateString(unix) {
+  const date = new Date(unix * 1000);
+  return (
+    date.toLocaleDateString('en-US') +
+    ' ' +
+    date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  );
 }
