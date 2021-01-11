@@ -1,6 +1,6 @@
 const axios = require('axios');
 const constants = require('./constants.js');
-const odds_json = require('./sport-odds.json');
+// const odds_json = require('./sport-odds.json');
 
 exports.main = async () => {
   let sport_key = 'upcoming';
@@ -18,7 +18,7 @@ exports.main = async () => {
 };
 
 // exports.main();
-//printValueOdds(odds_json.data);
+// printValueOdds(odds_json.data);
 
 async function findInSeasonSports() {
   try {
