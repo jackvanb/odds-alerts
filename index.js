@@ -3,32 +3,40 @@ const constants = require('./constants.js');
 // const odds_json = require('./sport-odds.json');
 
 exports.main = async () => {
-  let sport_key = 'upcoming';
-  let sport_region = 'us';
-  let sport_market = 'h2h';
-  const upcomingEvents = await findUpcomingEvents(
-    sport_key,
-    sport_region,
-    sport_market
-  );
-  if (upcomingEvents != null) {
-    printHedgeEvents(upcomingEvents);
-    printValueOdds(upcomingEvents);
+  let sportKeys = constants.SPORT_KEYS;
+  let bookieRegion = 'us';
+  let betMarket = 'h2h';
+  for (key of sportKeys) {
+    const upcomingEvents = await findUpcomingEvents(
+      key,
+      bookieRegion,
+      betMarket
+    );
+    if (upcomingEvents != null) {
+      printHedgeEvents(upcomingEvents);
+      // printValueOdds(upcomingEvents);
+    }
   }
 };
 
 // exports.main();
 // printValueOdds(odds_json.data);
+// findInSeasonSports();
 
 async function findInSeasonSports() {
   try {
-    const response = axios.get('https://api.the-odds-api.com/v3/sports', {
+    const response = await axios.get('https://api.the-odds-api.com/v3/sports', {
       params: {
         api_key: constants.ODDS_API_KEY,
       },
     });
 
     console.log(response.data.data);
+    sports = [];
+    for (sport of response.data.data) {
+      sports.push(sport.key);
+    }
+    console.log(sports);
     return response.data.data;
   } catch (error) {
     console.log('Error status', error.response.status);
@@ -60,7 +68,7 @@ async function findUpcomingEvents(key, region, market) {
     const upcomingEvents = response.data.data.filter(
       (event) => event.commence_time * 1000 > Date.now()
     );
-    console.log(upcomingEvents.length + ' events found.');
+    console.log(upcomingEvents.length + ' events found for sport ' + key);
     return upcomingEvents;
   } catch (error) {
     console.log('Error status', error.response.status);
@@ -114,7 +122,7 @@ function printHedgeEvents(events) {
         `${dateString(sportEvent.commence_time)}\n` +
         `${maxFirstTeamSite.site_nice} : ${sportEvent.teams[0]} - ${maxFirstTeamSite.odds.h2h[0]}\n` +
         `${maxSecondTeamSite.site_nice} : ${sportEvent.teams[1]} - ${maxSecondTeamSite.odds.h2h[1]}`;
-      sendTextMessage(msg);
+      // sendTextMessage(msg);
       console.log(msg);
     }
   }
@@ -122,10 +130,14 @@ function printHedgeEvents(events) {
 
 function printValueOdds(events) {
   for (const sportEvent of events) {
+    // No sites, skip.
+    if (sportEvent.sites.length == 0) {
+      continue;
+    }
     [0, 1].forEach((index) => {
       let valueBet = findValueBet(sportEvent, index);
       if (valueBet != null) {
-        // Value bet found
+        // Value bet found.
         const site = valueBet[0];
         const avgProb = valueBet[1];
         const msg =
@@ -133,7 +145,9 @@ function printValueOdds(events) {
           `${dateString(sportEvent.commence_time)}\n` +
           `${site.site_nice} : ${sportEvent.teams[index]} - ${site.odds.h2h[index]}\n` +
           `Average Odds : ${1 / avgProb}\n` +
-          `Estimated edge: ${site.odds.h2h[index] - avgProb / avgProb}%`;
+          `Estimated edge: ${numToPercent(
+            avgProb - 1 / site.odds.h2h[index]
+          )}%`;
         // sendTextMessage(msg);
         console.log(msg);
       }
@@ -142,18 +156,17 @@ function printValueOdds(events) {
 }
 
 function findValueBet(sportEvent, index) {
-  // Average odds of first team across bookies
+  // Average odds of first team across bookies.
   const averageProb = oddsAverage(sportEvent, index);
-  // Find max odds
+  // Find max odds & prob.
   const maxOddsSite = sportEvent.sites.reduce((prev, current) =>
     prev.odds.h2h[index] > current.odds.h2h[index] ? prev : current
   );
+  const maxOdds = maxOddsSite.odds.h2h[index];
 
-  if (
-    1 / maxOddsSite.odds.h2h[index] >
-    1 / (averageProb - constants.ODDS_ADJUSTMENT)
-  ) {
-    // Value bet
+  console.log(maxOdds + ' : ' + 1 / averageProb);
+  if (maxOdds > 1 / (averageProb - constants.ODDS_ADJUSTMENT)) {
+    // Value bet found.
     return [maxOddsSite, averageProb];
   }
 
@@ -175,4 +188,9 @@ function dateString(unix) {
     ' ' +
     date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   );
+}
+
+function numToPercent(num) {
+  num = num * 100;
+  return num.toFixed(2);
 }
