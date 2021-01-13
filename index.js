@@ -122,7 +122,7 @@ function printHedgeEvents(events) {
         `${dateString(sportEvent.commence_time)}\n` +
         `${maxFirstTeamSite.site_nice} : ${sportEvent.teams[0]} - ${maxFirstTeamSite.odds.h2h[0]}\n` +
         `${maxSecondTeamSite.site_nice} : ${sportEvent.teams[1]} - ${maxSecondTeamSite.odds.h2h[1]}`;
-      // sendTextMessage(msg);
+      sendTextMessage(msg);
       console.log(msg);
     }
   }
