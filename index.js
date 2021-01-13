@@ -14,7 +14,7 @@ exports.main = async () => {
     );
     if (upcomingEvents != null) {
       printHedgeEvents(upcomingEvents);
-      // printValueOdds(upcomingEvents);
+      printValueOdds(upcomingEvents);
     }
   }
 };
