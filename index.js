@@ -164,7 +164,6 @@ function findValueBet(sportEvent, index) {
   );
   const maxOdds = maxOddsSite.odds.h2h[index];
 
-  console.log(maxOdds + ' : ' + 1 / averageProb);
   if (maxOdds > 1 / (averageProb - constants.ODDS_ADJUSTMENT)) {
     // Value bet found.
     return [maxOddsSite, averageProb];
