@@ -140,8 +140,9 @@ function printValueOdds(events) {
         // Value bet found.
         const site = valueBet[0];
         const avgProb = valueBet[1];
+        const opp = index == 0 ? sportEvent.teams[1] : sportEvent.teams[0];
         const msg =
-          `Value Odd Found: ${sportEvent.sport_nice}\n` +
+          `Value Odd Found: ${sportEvent.teams[index]} vs. ${opp} (${sportEvent.sport_nice})\n` +
           `${dateString(sportEvent.commence_time)}\n` +
           `${site.site_nice} : ${sportEvent.teams[index]} - ${site.odds.h2h[index]}\n` +
           `Average Odds : ${1 / avgProb}\n` +
@@ -156,9 +157,13 @@ function printValueOdds(events) {
 }
 
 function findValueBet(sportEvent, index) {
-  // Average odds of first team across bookies.
+  // Average odd probabilities of first team across bookies.
   const averageProb = oddsAverage(sportEvent, index);
-  // Find max odds & prob.
+  // Odds of event are below threshold.
+  if (averageProb <= constants.ODDS_ADJUSTMENT) {
+    return null;
+  }
+  // Find site that gives the max odds.
   const maxOddsSite = sportEvent.sites.reduce((prev, current) =>
     prev.odds.h2h[index] > current.odds.h2h[index] ? prev : current
   );
