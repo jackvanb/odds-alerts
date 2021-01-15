@@ -18,6 +18,7 @@ exports.smsTo = process.env.SMS_TO;
 
 // Constants
 exports.ODDS_ADJUSTMENT = 0.05;
+exports.OVERALL_STAKE = 100;
 exports.SPORT_KEYS = [
   'americanfootball_nfl',
   'aussierules_afl',
