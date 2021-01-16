@@ -13,8 +13,8 @@ exports.main = async () => {
       betMarket
     );
     if (upcomingEvents != null) {
-      // printHedgeEvents(upcomingEvents);
-      // printValueOdds(upcomingEvents);
+      printHedgeEvents(upcomingEvents);
+      printValueOdds(upcomingEvents);
       printArbitrageEvents(upcomingEvents);
     }
   }
@@ -130,7 +130,7 @@ function printArbitrageEvents(events) {
         `Surebet Found: ${sportEvent.teams[0]} vs. ${sportEvent.teams[1]} (${sportEvent.sport_nice})\n` +
         `${dateString(sportEvent.commence_time)}\n` +
         `${maxOddsFirstSite.site_nice}: ${sportEvent.teams[0]} - ${maxOddsFirstSite.odds.h2h[0]} (Bet: $${firstTeamStake})\n` +
-        `${maxOddsSecondSite.site_nice}: ${sportEvent.teams[1]} - ${maxOddsFirstSite.odds.h2h[1]} (Bet: $${secondTeamStake})\n` +
+        `${maxOddsSecondSite.site_nice}: ${sportEvent.teams[1]} - ${maxOddsSecondSite.odds.h2h[1]} (Bet: $${secondTeamStake})\n` +
         `Profit: $${profit} (ROI: ${roi}%)`;
       sendTextMessage(msg);
       console.log(msg);
