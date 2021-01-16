@@ -13,7 +13,7 @@ exports.main = async () => {
       betMarket
     );
     if (upcomingEvents != null) {
-      printHedgeEvents(upcomingEvents);
+      // printHedgeEvents(upcomingEvents);
       printValueOdds(upcomingEvents);
       printArbitrageEvents(upcomingEvents);
     }
@@ -180,7 +180,11 @@ function printHedgeEvents(events) {
 }
 
 function printValueOdds(events) {
-  for (const sportEvent of events) {
+  for (let sportEvent of events) {
+    // Remove sites that include draw in the h2h odds.
+    sportEvent.sites = sportEvent.sites.filter(
+      (site) => site.odds.h2h.length < 3
+    );
     // No sites, skip.
     if (sportEvent.sites.length == 0) {
       continue;
