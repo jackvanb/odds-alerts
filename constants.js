@@ -20,7 +20,6 @@ exports.smsTo = process.env.SMS_TO;
 exports.ODDS_ADJUSTMENT = 0.05;
 exports.OVERALL_STAKE = 100;
 exports.SPORT_KEYS = [
-  'americanfootball_nfl',
   'aussierules_afl',
   'basketball_euroleague',
   'basketball_nba',
@@ -31,4 +30,17 @@ exports.SPORT_KEYS = [
   'icehockey_nhl',
   'mma_mixed_martial_arts',
   'rugbyleague_nrl',
+  'soccer_efl_champ',
+  'soccer_england_league1',
+  'soccer_england_league2',
+  'soccer_epl',
+  'soccer_france_ligue_one',
+  'soccer_germany_bundesliga',
+  'soccer_italy_serie_a',
+  'soccer_italy_serie_b',
+  'soccer_netherlands_eredivisie',
+  'soccer_spain_la_liga',
+  'soccer_turkey_super_league',
+  'soccer_uefa_champs_league',
+  'soccer_uefa_europa_league',
 ];

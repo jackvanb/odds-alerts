@@ -91,99 +91,149 @@ function sendTextMessage(msg) {
 
 function printArbitrageEvents(events) {
   for (const sportEvent of events) {
-    // Remove sites that include draw in the h2h odds.
+    // Seperate sites that include draw in the h2h odds.
     const nonDrawSites = sportEvent.sites.filter(
-      (site) => site.odds.h2h.length < 3
+      (site) => site.odds.h2h.length == 2
     );
-    // No sites, skip.
-    if (nonDrawSites.length == 0) {
-      continue;
-    }
-    // Find site that gives the max odds for teams or draw event.
-    const maxOddsFirstSite = nonDrawSites.reduce((prev, current) =>
-      prev.odds.h2h[0] > current.odds.h2h[0] ? prev : current
+    const drawSites = sportEvent.sites.filter(
+      (site) => site.odds.h2h.length == 3
     );
-    const maxOddsSecondSite = nonDrawSites.reduce((prev, current) =>
-      prev.odds.h2h[1] > current.odds.h2h[1] ? prev : current
-    );
-    const probFirstTeam = 1 / maxOddsFirstSite.odds.h2h[0];
-    const probSecondTeam = 1 / maxOddsSecondSite.odds.h2h[1];
 
-    if (probFirstTeam + probSecondTeam < 0.98) {
-      // Market margin is under 98%
-      const mktMargin = probFirstTeam + probSecondTeam;
-      const firstTeamStake = (
-        (constants.OVERALL_STAKE * probFirstTeam) /
-        mktMargin
-      ).toFixed(2);
-      const secondTeamStake = (
-        (constants.OVERALL_STAKE * probSecondTeam) /
-        mktMargin
-      ).toFixed(2);
-      const payOut = average(
-        firstTeamStake * maxOddsFirstSite.odds.h2h[0],
-        secondTeamStake * maxOddsSecondSite.odds.h2h[1]
-      ).toFixed(2);
-      const profit = (payOut - constants.OVERALL_STAKE).toFixed(2);
-      const roi = numToPercent(profit / constants.OVERALL_STAKE);
-      const msg =
-        `Surebet Found: ${sportEvent.teams[0]} vs. ${sportEvent.teams[1]} (${sportEvent.sport_nice})\n` +
-        `${dateString(sportEvent.commence_time)}\n` +
-        `${maxOddsFirstSite.site_nice}: ${sportEvent.teams[0]} - ${maxOddsFirstSite.odds.h2h[0]} (Bet: $${firstTeamStake})\n` +
-        `${maxOddsSecondSite.site_nice}: ${sportEvent.teams[1]} - ${maxOddsSecondSite.odds.h2h[1]} (Bet: $${secondTeamStake})\n` +
-        `Profit: $${profit} (ROI: ${roi}%)`;
+    let nonDrawBet;
+    let drawBet;
+    if (nonDrawSites.length != 0) {
+      nonDrawBet = findArbitrageEvent(nonDrawSites, false);
+    }
+    if (drawSites.length != 0) {
+      drawBet = findArbitrageEvent(drawSites, true);
+    }
+
+    if (nonDrawBet != null) {
+      const { sites, probs } = nonDrawBet;
+      const arbOdds = calculateArbitrageOdds(sites, probs, false);
+      const msg = formatArbitrageOdds(sites, arbOdds, sportEvent, false);
+      sendTextMessage(msg);
+      console.log(msg);
+    }
+    if (drawBet != null) {
+      const { sites, probs } = drawBet;
+      const arbOdds = calculateArbitrageOdds(sites, probs, true);
+      const msg = formatArbitrageOdds(sites, arbOdds, sportEvent, true);
       sendTextMessage(msg);
       console.log(msg);
     }
   }
 }
 
-function printHedgeEvents(events) {
-  for (const sportEvent of events) {
-    let firstTeamDogSites = [];
-    let secondTeamDogSites = [];
-    for (let i = 0; i < sportEvent.sites.length - 1; i++) {
-      if (sportEvent.sites[i].odds.h2h[0] > sportEvent.sites[i].odds.h2h[1]) {
-        firstTeamDogSites.push(sportEvent.sites[i]);
-      } else if (
-        sportEvent.sites[i].odds.h2h[0] < sportEvent.sites[i].odds.h2h[1]
-      ) {
-        secondTeamDogSites.push(sportEvent.sites[i]);
-      }
-    }
-    if (firstTeamDogSites.length > 0 && secondTeamDogSites.length > 0) {
-      // console.dir(firstTeamDogSites, { depth: null });
-      // console.dir(secondTeamDogSites, { depth: null });
-      // Find largest odds from each array
-      const maxFirstTeamSite = firstTeamDogSites.reduce((prev, current) =>
-        prev.odds.h2h[0] > current.odds.h2h[0] ? prev : current
-      );
-      const maxSecondTeamSite = secondTeamDogSites.reduce((prev, current) =>
-        prev.odds.h2h[1] > current.odds.h2h[1] ? prev : current
-      );
-      // Error in lines
-      if (
-        maxFirstTeamSite.odds.h2h[0] < 2 ||
-        maxSecondTeamSite.odds.h2h[1] < 2
-      ) {
-        continue;
-      }
-      const msg =
-        `Money Maker: ${sportEvent.sport_nice}\n` +
-        `${dateString(sportEvent.commence_time)}\n` +
-        `${maxFirstTeamSite.site_nice} : ${sportEvent.teams[0]} - ${maxFirstTeamSite.odds.h2h[0]}\n` +
-        `${maxSecondTeamSite.site_nice} : ${sportEvent.teams[1]} - ${maxSecondTeamSite.odds.h2h[1]}`;
-      sendTextMessage(msg);
-      console.log(msg);
-    }
+function findArbitrageEvent(sites, hasDrawOutcome) {
+  // Find site that gives the max odds for teams or draw event.
+  const maxOddsFirstSite = sites.reduce((prev, current) =>
+    prev.odds.h2h[0] > current.odds.h2h[0] ? prev : current
+  );
+  const maxOddsSecondSite = sites.reduce((prev, current) =>
+    prev.odds.h2h[1] > current.odds.h2h[1] ? prev : current
+  );
+  let maxOddsDrawSite = null;
+  if (hasDrawOutcome) {
+    maxOddsDrawSite = sites.reduce((prev, current) =>
+      prev.odds.h2h[2] > current.odds.h2h[2] ? prev : current
+    );
   }
+
+  const probFirstTeam = 1 / maxOddsFirstSite.odds.h2h[0];
+  const probSecondTeam = 1 / maxOddsSecondSite.odds.h2h[1];
+  let probDraw = null;
+  if (hasDrawOutcome) {
+    probDraw = 1 / maxOddsDrawSite.odds.h2h[2];
+  }
+
+  if (hasDrawOutcome) {
+    if (probFirstTeam + probSecondTeam + probDraw < 0.98) {
+      // Market margin is under 98%, arb event found.
+      return {
+        sites: [maxOddsFirstSite, maxOddsSecondSite, maxOddsDrawSite],
+        probs: [probFirstTeam, probSecondTeam, probDraw],
+      };
+    }
+  } else if (probFirstTeam + probSecondTeam < 0.98) {
+    // Market margin is under 98%, arb bet found.
+    return {
+      sites: [maxOddsFirstSite, maxOddsSecondSite],
+      probs: [probFirstTeam, probSecondTeam],
+    };
+  }
+
+  return null;
+}
+
+function calculateArbitrageOdds(sites, probs, hasDrawOutcome) {
+  const [firstSite, secondSite, drawSite] = [sites[0], sites[1], sites[2]];
+  const [probFirstTeam, probSecondTeam, probDraw] = [
+    probs[0],
+    probs[1],
+    probs[2],
+  ];
+
+  const mktMargin = hasDrawOutcome
+    ? probFirstTeam + probSecondTeam + probDraw
+    : probFirstTeam + probSecondTeam;
+  const firstTeamStake = (
+    (constants.OVERALL_STAKE * probFirstTeam) /
+    mktMargin
+  ).toFixed(2);
+  const secondTeamStake = (
+    (constants.OVERALL_STAKE * probSecondTeam) /
+    mktMargin
+  ).toFixed(2);
+  const drawStake = hasDrawOutcome
+    ? ((constants.OVERALL_STAKE * probDraw) / mktMargin).toFixed(2)
+    : 0;
+  const payOut = hasDrawOutcome
+    ? average(
+        firstTeamStake * firstSite.odds.h2h[0],
+        secondTeamStake * secondSite.odds.h2h[1],
+        drawStake * drawSite.odds.h2h[2]
+      ).toFixed(2)
+    : average(
+        firstTeamStake * firstSite.odds.h2h[0],
+        secondTeamStake * secondSite.odds.h2h[1]
+      ).toFixed(2);
+  const profit = (payOut - constants.OVERALL_STAKE).toFixed(2);
+  const roi = numToPercent(profit / constants.OVERALL_STAKE);
+
+  return {
+    stakes: [
+      firstTeamStake,
+      secondTeamStake,
+      ...(hasDrawOutcome ? [drawStake] : []),
+    ],
+    profit: profit,
+    roi: roi,
+  };
+}
+
+function formatArbitrageOdds(sites, arbOdds, sportEvent, hasDrawOutCome) {
+  const [firstSite, secondSite, drawSite] = [sites[0], sites[1], sites[2]];
+  const msg = hasDrawOutCome
+    ? `Surebet Found: ${sportEvent.teams[0]} vs. ${sportEvent.teams[1]} (${sportEvent.sport_nice})\n` +
+      `${dateString(sportEvent.commence_time)}\n` +
+      `${firstSite.site_nice}: ${sportEvent.teams[0]} - ${firstSite.odds.h2h[0]} (Bet: $${arbOdds.stakes[0]})\n` +
+      `${secondSite.site_nice}: ${sportEvent.teams[1]} - ${secondSite.odds.h2h[1]} (Bet: $${arbOdds.stakes[1]})\n` +
+      `${drawSite.site_nice}: Draw - ${drawSite.odds.h2h[2]} (Bet: $${arbOdds.stakes[2]})\n` +
+      `Profit: $${arbOdds.profit} (ROI: ${arbOdds.roi}%)`
+    : `Surebet Found: ${sportEvent.teams[0]} vs. ${sportEvent.teams[1]} (${sportEvent.sport_nice})\n` +
+      `${dateString(sportEvent.commence_time)}\n` +
+      `${firstSite.site_nice}: ${sportEvent.teams[0]} - ${firstSite.odds.h2h[0]} (Bet: $${arbOdds.stakes[0]})\n` +
+      `${secondSite.site_nice}: ${sportEvent.teams[1]} - ${secondSite.odds.h2h[1]} (Bet: $${arbOdds.stakes[1]})\n` +
+      `Profit: $${arbOdds.profit} (ROI: ${arbOdds.roi}%)`;
+  return msg;
 }
 
 function printValueOdds(events) {
   for (let sportEvent of events) {
     // Remove sites that include draw in the h2h odds.
     sportEvent.sites = sportEvent.sites.filter(
-      (site) => site.odds.h2h.length < 3
+      (site) => site.odds.h2h.length == 2
     );
     // No sites, skip.
     if (sportEvent.sites.length == 0) {
@@ -232,6 +282,9 @@ function findValueBet(sportEvent, index) {
   return null;
 }
 
+/*
+Utils
+*/
 function oddsAverage(event, index) {
   let sum = 0;
   for (const site of event.sites) {
@@ -258,6 +311,10 @@ function numToPercent(num) {
   return num.toFixed(2);
 }
 
-function average(a, b) {
-  return (a + b) / 2;
+function average(...args) {
+  return (
+    args.reduce((previous, current) => {
+      return previous + current;
+    }) / args.length
+  );
 }
