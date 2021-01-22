@@ -79,16 +79,6 @@ async function findUpcomingEvents(key, region, market) {
   }
 }
 
-function sendTextMessage(msg) {
-  constants.smsClient.messages
-    .create({
-      body: msg,
-      from: constants.smsFrom,
-      to: constants.smsTo,
-    })
-    .then((message) => console.log('Message sent: ' + message.sid));
-}
-
 function printArbitrageEvents(events) {
   for (const sportEvent of events) {
     // Seperate sites that include draw in the h2h odds.
@@ -285,6 +275,19 @@ function findValueBet(sportEvent, index) {
 /*
 Utils
 */
+sendTextMessage('hey');
+function sendTextMessage(msg) {
+  constants.smsTo.forEach((number) => {
+    constants.smsClient.messages
+      .create({
+        body: msg,
+        from: constants.smsFrom,
+        to: number,
+      })
+      .then((message) => console.log('Message sent: ' + message.sid));
+  });
+}
+
 function oddsAverage(event, index) {
   let sum = 0;
   for (const site of event.sites) {

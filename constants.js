@@ -14,7 +14,7 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 exports.smsClient = new twilio(accountSid, authToken);
 exports.smsFrom = process.env.SMS_FROM;
-exports.smsTo = process.env.SMS_TO;
+exports.smsTo = ['+19162206791', '+19549808358'];
 
 // Constants
 exports.ODDS_ADJUSTMENT = 0.05;
