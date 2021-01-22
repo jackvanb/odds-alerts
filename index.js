@@ -220,46 +220,73 @@ function formatArbitrageOdds(sites, arbOdds, sportEvent, hasDrawOutCome) {
 }
 
 function printValueOdds(events) {
-  for (let sportEvent of events) {
-    // Remove sites that include draw in the h2h odds.
-    sportEvent.sites = sportEvent.sites.filter(
+  for (const sportEvent of events) {
+    const nonDrawSites = sportEvent.sites.filter(
       (site) => site.odds.h2h.length == 2
     );
-    // No sites, skip.
-    if (sportEvent.sites.length == 0) {
-      continue;
+    const drawSites = sportEvent.sites.filter(
+      (site) => site.odds.h2h.length == 3
+    );
+    if (drawSites.length > 2) {
+      [0, 1, 2].forEach((index) => {
+        let valueBet = findValueBet(drawSites, index);
+        if (valueBet != null) {
+          // Value bet found.
+          const site = valueBet[0];
+          const avgProb = valueBet[1];
+          const opp = index == 0 ? sportEvent.teams[1] : sportEvent.teams[0];
+          const team =
+            index == 2
+              ? 'Draw'
+              : index == 0
+              ? sportEvent.teams[0]
+              : sportEvent.teams[1];
+          const msg =
+            `Value Odd Found: ${sportEvent.teams[0]} vs. ${sportEvent.teams[1]} (${sportEvent.sport_nice})\n` +
+            `${dateString(sportEvent.commence_time)}\n` +
+            `${site.site_nice} : ${team} - ${site.odds.h2h[index]}\n` +
+            `Average Odds : ${(1 / avgProb).toFixed(2)}\n` +
+            `Estimated edge: ${numToPercent(
+              avgProb - 1 / site.odds.h2h[index]
+            )}%`;
+          sendTextMessage(msg);
+          console.log(msg);
+        }
+      });
     }
-    [0, 1].forEach((index) => {
-      let valueBet = findValueBet(sportEvent, index);
-      if (valueBet != null) {
-        // Value bet found.
-        const site = valueBet[0];
-        const avgProb = valueBet[1];
-        const opp = index == 0 ? sportEvent.teams[1] : sportEvent.teams[0];
-        const msg =
-          `Value Odd Found: ${sportEvent.teams[index]} vs. ${opp} (${sportEvent.sport_nice})\n` +
-          `${dateString(sportEvent.commence_time)}\n` +
-          `${site.site_nice} : ${sportEvent.teams[index]} - ${site.odds.h2h[index]}\n` +
-          `Average Odds : ${1 / avgProb}\n` +
-          `Estimated edge: ${numToPercent(
-            avgProb - 1 / site.odds.h2h[index]
-          )}%`;
-        // sendTextMessage(msg);
-        console.log(msg);
-      }
-    });
+    if (nonDrawSites.length > 2) {
+      [0, 1].forEach((index) => {
+        let valueBet = findValueBet(nonDrawSites, index);
+        if (valueBet != null) {
+          // Value bet found.
+          const site = valueBet[0];
+          const avgProb = valueBet[1];
+          const opp = index == 0 ? sportEvent.teams[1] : sportEvent.teams[0];
+          const msg =
+            `Value Odd Found: ${sportEvent.teams[index]} vs. ${opp} (${sportEvent.sport_nice})\n` +
+            `${dateString(sportEvent.commence_time)}\n` +
+            `${site.site_nice} : ${sportEvent.teams[index]} - ${site.odds.h2h[index]}\n` +
+            `Average Odds : ${1 / avgProb}\n` +
+            `Estimated edge: ${numToPercent(
+              avgProb - 1 / site.odds.h2h[index]
+            )}%`;
+          sendTextMessage(msg);
+          console.log(msg);
+        }
+      });
+    }
   }
 }
 
-function findValueBet(sportEvent, index) {
+function findValueBet(sites, index) {
   // Average odd probabilities of first team across bookies.
-  const averageProb = oddsAverage(sportEvent, index);
+  const averageProb = oddsAverage(sites, index);
   // Odds of event are below threshold.
   if (averageProb <= constants.ODDS_ADJUSTMENT) {
     return null;
   }
   // Find site that gives the max odds.
-  const maxOddsSite = sportEvent.sites.reduce((prev, current) =>
+  const maxOddsSite = sites.reduce((prev, current) =>
     prev.odds.h2h[index] > current.odds.h2h[index] ? prev : current
   );
   const maxOdds = maxOddsSite.odds.h2h[index];
@@ -288,12 +315,12 @@ function sendTextMessage(msg) {
   });
 }
 
-function oddsAverage(event, index) {
+function oddsAverage(sites, index) {
   let sum = 0;
-  for (const site of event.sites) {
+  for (const site of sites) {
     sum += 1 / site.odds.h2h[index];
   }
-  return sum / event.sites.length;
+  return sum / sites.length;
 }
 
 function dateString(unix) {

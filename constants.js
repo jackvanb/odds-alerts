@@ -17,7 +17,7 @@ exports.smsFrom = process.env.SMS_FROM;
 exports.smsTo = ['+19162206791', '+19549808358'];
 
 // Constants
-exports.ODDS_ADJUSTMENT = 0.05;
+exports.ODDS_ADJUSTMENT = 0.1;
 exports.OVERALL_STAKE = 100;
 exports.SPORT_KEYS = [
   'aussierules_afl',
