@@ -275,7 +275,6 @@ function findValueBet(sportEvent, index) {
 /*
 Utils
 */
-sendTextMessage('hey');
 function sendTextMessage(msg) {
   constants.smsTo.forEach((number) => {
     constants.smsClient.messages
@@ -284,7 +283,8 @@ function sendTextMessage(msg) {
         from: constants.smsFrom,
         to: number,
       })
-      .then((message) => console.log('Message sent: ' + message.sid));
+      .then((message) => console.log('Message sent: ' + message.sid))
+      .catch((error) => console.log(error.message));
   });
 }
 
