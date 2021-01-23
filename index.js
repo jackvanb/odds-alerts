@@ -13,7 +13,6 @@ exports.main = async () => {
       betMarket
     );
     if (upcomingEvents != null) {
-      // printHedgeEvents(upcomingEvents);
       printValueOdds(upcomingEvents);
       printArbitrageEvents(upcomingEvents);
     }
@@ -81,13 +80,15 @@ async function findUpcomingEvents(key, region, market) {
 
 function printArbitrageEvents(events) {
   for (const sportEvent of events) {
+    // Remove sites that we cannot bet from.
+    const allowedSites = sportEvent.sites.filter(
+      (site) => !constants.SITE_BLOCKLIST.includes(site.site_key)
+    );
     // Seperate sites that include draw in the h2h odds.
-    const nonDrawSites = sportEvent.sites.filter(
+    const nonDrawSites = allowedSites.filter(
       (site) => site.odds.h2h.length == 2
     );
-    const drawSites = sportEvent.sites.filter(
-      (site) => site.odds.h2h.length == 3
-    );
+    const drawSites = allowedSites.filter((site) => site.odds.h2h.length == 3);
 
     let nonDrawBet;
     let drawBet;

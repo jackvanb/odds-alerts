@@ -19,6 +19,16 @@ exports.smsTo = ['+19162206791', '+19549808358'];
 // Constants
 exports.ODDS_ADJUSTMENT = 0.15;
 exports.OVERALL_STAKE = 100;
+exports.SITE_BLOCKLIST = [
+  'draftkings',
+  'fanduel',
+  'williamhill_us',
+  'caesars',
+  'betmgm',
+  'sugarhouse',
+  'betrivers',
+  'betfair',
+];
 exports.SPORT_KEYS = [
   'aussierules_afl',
   'basketball_euroleague',
