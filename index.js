@@ -267,7 +267,7 @@ function printValueOdds(events) {
             `Value Odd Found: ${sportEvent.teams[index]} vs. ${opp} (${sportEvent.sport_nice})\n` +
             `${dateString(sportEvent.commence_time)}\n` +
             `${site.site_nice} : ${sportEvent.teams[index]} - ${site.odds.h2h[index]}\n` +
-            `Average Odds : ${1 / avgProb}\n` +
+            `Average Odds : ${(1 / avgProb).toFixed(2)}\n` +
             `Estimated edge: ${numToPercent(
               avgProb - 1 / site.odds.h2h[index]
             )}%`;
