@@ -286,15 +286,21 @@ function findValueBet(sites, index) {
   if (averageProb <= constants.ODDS_ADJUSTMENT) {
     return null;
   }
-  // Find site that gives the max odds.
-  const maxOddsSite = sites.reduce((prev, current) =>
-    prev.odds.h2h[index] > current.odds.h2h[index] ? prev : current
+  // Sort odds in descending order.
+  const sortedSites = sites.sort(
+    (a, b) => b.odds.h2h[index] - a.odds.h2h[index]
   );
-  const maxOdds = maxOddsSite.odds.h2h[index];
-
-  if (maxOdds > 1 / (averageProb - constants.ODDS_ADJUSTMENT)) {
-    // Value bet found.
-    return [maxOddsSite, averageProb];
+  for (let i = 0; i < sortedSites.length; i++) {
+    const maxOdds = sortedSites[i].odds.h2h[index];
+    if (maxOdds < 1 / (averageProb - constants.ODDS_ADJUSTMENT)) {
+      break;
+    } else if (
+      maxOdds > 1 / (averageProb - constants.ODDS_ADJUSTMENT) &&
+      !constants.SITE_BLOCKLIST.includes(sortedSites[i].site_key)
+    ) {
+      // Value bet found.
+      return [sortedSites[i], averageProb];
+    }
   }
 
   return null;
