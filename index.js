@@ -250,7 +250,7 @@ function printValueOdds(events) {
             `Estimated edge: ${numToPercent(
               avgProb - 1 / site.odds.h2h[index]
             )}%`;
-          sendTextMessage(msg);
+          // sendTextMessage(msg);
           console.log(msg);
         }
       });
@@ -271,7 +271,7 @@ function printValueOdds(events) {
             `Estimated edge: ${numToPercent(
               avgProb - 1 / site.odds.h2h[index]
             )}%`;
-          sendTextMessage(msg);
+          // sendTextMessage(msg);
           console.log(msg);
         }
       });
