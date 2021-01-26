@@ -131,6 +131,16 @@ function findArbitrageEvent(sites, hasDrawOutcome) {
     );
   }
 
+  // Check error condition when Odds API does not return
+  // draw outcome when it should be.
+  if (
+    !hasDrawOutcome &&
+    maxOddsFirstSite.site_key == maxOddsSecondSite.site_key
+  ) {
+    console.log('Possible Error: ', maxOddsFirstSite, maxOddsSecondSite);
+    return null;
+  }
+
   const probFirstTeam = 1 / maxOddsFirstSite.odds.h2h[0];
   const probSecondTeam = 1 / maxOddsSecondSite.odds.h2h[1];
   let probDraw = null;

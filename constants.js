@@ -30,16 +30,11 @@ exports.SITE_BLOCKLIST = [
   'betfair',
 ];
 exports.SPORT_KEYS = [
-  'aussierules_afl',
   'basketball_euroleague',
   'basketball_nba',
   'basketball_ncaab',
-  'cricket_big_bash',
-  'cricket_odi',
-  'cricket_test_match',
   'icehockey_nhl',
   'mma_mixed_martial_arts',
-  'rugbyleague_nrl',
   'soccer_efl_champ',
   'soccer_england_league1',
   'soccer_england_league2',
