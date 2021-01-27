@@ -131,16 +131,6 @@ function findArbitrageEvent(sites, hasDrawOutcome) {
     );
   }
 
-  // Check error condition when Odds API does not return
-  // draw outcome when it should be.
-  if (
-    !hasDrawOutcome &&
-    maxOddsFirstSite.site_key == maxOddsSecondSite.site_key
-  ) {
-    console.log('Possible Error: ', maxOddsFirstSite, maxOddsSecondSite);
-    return null;
-  }
-
   const probFirstTeam = 1 / maxOddsFirstSite.odds.h2h[0];
   const probSecondTeam = 1 / maxOddsSecondSite.odds.h2h[1];
   let probDraw = null;
@@ -158,6 +148,13 @@ function findArbitrageEvent(sites, hasDrawOutcome) {
     }
   } else if (probFirstTeam + probSecondTeam < 0.98) {
     // Market margin is under 98%, arb bet found.
+
+    // Check error condition when Odds API does not return
+    // draw outcome when it should be.
+    if (maxOddsFirstSite.site_key == maxOddsSecondSite.site_key) {
+      console.log('Possible Error: ', maxOddsFirstSite, maxOddsSecondSite);
+      return null;
+    }
     return {
       sites: [maxOddsFirstSite, maxOddsSecondSite],
       probs: [probFirstTeam, probSecondTeam],
