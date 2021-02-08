@@ -28,6 +28,7 @@ exports.SITE_BLOCKLIST = [
   'sugarhouse',
   'betrivers',
   'betfair',
+  'unibet',
 ];
 exports.SPORT_KEYS = [
   'basketball_euroleague',
