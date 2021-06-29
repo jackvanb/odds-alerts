@@ -103,14 +103,14 @@ function printArbitrageEvents(events) {
       const { sites, probs } = nonDrawBet;
       const arbOdds = calculateArbitrageOdds(sites, probs, false);
       const msg = formatArbitrageOdds(sites, arbOdds, sportEvent, false);
-      sendTextMessage(msg);
+      // sendTextMessage(msg);
       console.log(msg);
     }
     if (drawBet != null) {
       const { sites, probs } = drawBet;
       const arbOdds = calculateArbitrageOdds(sites, probs, true);
       const msg = formatArbitrageOdds(sites, arbOdds, sportEvent, true);
-      sendTextMessage(msg);
+      // sendTextMessage(msg);
       console.log(msg);
     }
   }
